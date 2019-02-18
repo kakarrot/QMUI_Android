@@ -21,12 +21,11 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Build;
-import android.support.annotation.ColorInt;
-import android.support.annotation.IntDef;
-import android.support.v4.view.ViewCompat;
+import androidx.annotation.ColorInt;
+import androidx.annotation.IntDef;
+import androidx.core.view.ViewCompat;
 import android.view.View;
 import android.view.Window;
-import android.view.WindowInsets;
 import android.view.WindowManager;
 
 import java.lang.annotation.Retention;
@@ -269,7 +268,7 @@ public class QMUIStatusBarHelper {
         decorView.setSystemUiVisibility(systemUi);
         if (QMUIDeviceHelper.isMIUIV9()) {
             // MIUI 9 低于 6.0 版本依旧只能回退到以前的方案
-            // https://github.com/QMUI/QMUI_Android/issues/160
+            // https://github.com/Tencent/QMUI_Android/issues/160
             MIUISetStatusBarLightMode(window, light);
         }
         return true;

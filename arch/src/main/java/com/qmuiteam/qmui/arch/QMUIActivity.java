@@ -18,7 +18,7 @@ package com.qmuiteam.qmui.arch;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -94,11 +94,6 @@ public class QMUIActivity extends InnerBaseActivity {
         @Override
         public boolean canSwipeBack() {
             return QMUISwipeBackActivityManager.getInstance().canSwipeBack() && canDragBack();
-        }
-
-        @Override
-        public boolean needFixFragmentManagerEndAnimatingAwayError() {
-            return false;
         }
     };
 

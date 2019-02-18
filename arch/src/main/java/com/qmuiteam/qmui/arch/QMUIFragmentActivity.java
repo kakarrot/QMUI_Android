@@ -18,9 +18,9 @@ package com.qmuiteam.qmui.arch;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import android.util.Log;
 import android.widget.FrameLayout;
 
@@ -36,7 +36,6 @@ import java.lang.reflect.Field;
 public abstract class QMUIFragmentActivity extends InnerBaseActivity {
     private static final String TAG = "QMUIFragmentActivity";
     private QMUIWindowInsetLayout mFragmentContainer;
-    private boolean mIsInSuperSaveInstanceState = false;
 
     @SuppressWarnings("SameReturnValue")
     protected abstract int getContextViewId();
@@ -60,18 +59,6 @@ public abstract class QMUIFragmentActivity extends InnerBaseActivity {
         if (fragment != null && !fragment.isInSwipeBack()) {
             fragment.popBackStack();
         }
-    }
-
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        mIsInSuperSaveInstanceState = true;
-        super.onSaveInstanceState(outState);
-        mIsInSuperSaveInstanceState = false;
-    }
-
-    boolean isInSuperSaveInstanceState() {
-        return mIsInSuperSaveInstanceState;
     }
 
     /**

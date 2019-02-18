@@ -43,45 +43,44 @@ import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.support.annotation.ColorInt;
-import android.support.annotation.DrawableRes;
-import android.support.annotation.IntDef;
-import android.support.annotation.IntRange;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
-import android.support.annotation.RestrictTo;
-import android.support.annotation.StyleRes;
-import android.support.design.widget.AppBarLayout;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.graphics.drawable.DrawableCompat;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.view.ViewCompat;
-import android.support.v4.view.WindowInsetsCompat;
+import androidx.annotation.ColorInt;
+import androidx.annotation.DrawableRes;
+import androidx.annotation.IntDef;
+import androidx.annotation.IntRange;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.annotation.RestrictTo;
+import androidx.annotation.StyleRes;
+import com.google.android.material.appbar.AppBarLayout;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
+import androidx.core.view.GravityCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
-import android.view.WindowInsets;
 import android.widget.FrameLayout;
 
+import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.qmuiteam.qmui.QMUIInterpolatorStaticHolder;
 import com.qmuiteam.qmui.R;
 import com.qmuiteam.qmui.util.QMUICollapsingTextHelper;
 import com.qmuiteam.qmui.util.QMUILangHelper;
-import com.qmuiteam.qmui.util.QMUINotchHelper;
 import com.qmuiteam.qmui.util.QMUIViewHelper;
 import com.qmuiteam.qmui.util.QMUIViewOffsetHelper;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-import static android.support.annotation.RestrictTo.Scope.LIBRARY_GROUP;
+import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP;
 
 /**
- * 参考 {@link android.support.design.widget.CollapsingToolbarLayout}, 适配 QMUITopBar
+ * 参考 {@link CollapsingToolbarLayout}, 适配 QMUITopBar
  *
  * @author cginechen
  * @date 2017-09-02
@@ -201,7 +200,7 @@ public class QMUICollapsingTopBarLayout extends FrameLayout implements IWindowIn
         setWillNotDraw(false);
 
         ViewCompat.setOnApplyWindowInsetsListener(this,
-                new android.support.v4.view.OnApplyWindowInsetsListener() {
+                new androidx.core.view.OnApplyWindowInsetsListener() {
                     @Override
                     public WindowInsetsCompat onApplyWindowInsets(View v, WindowInsetsCompat insets) {
                         return setWindowInsets(insets);
@@ -365,6 +364,7 @@ public class QMUICollapsingTopBarLayout extends FrameLayout implements IWindowIn
         return directChild;
     }
 
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         ensureToolbar();
@@ -389,26 +389,19 @@ public class QMUICollapsingTopBarLayout extends FrameLayout implements IWindowIn
             }
         }
 
-        // Update our child view offset helpers. This needs to be done after the title has been
-        // setup, so that any Toolbars are in their original position
-        for (int i = 0, z = getChildCount(); i < z; i++) {
-            getViewOffsetHelper(getChildAt(i)).onViewLayout();
-        }
-
         // Update the collapsed bounds by getting it's transformed bounds
         if (mCollapsingTitleEnabled) {
             // Update the collapsed bounds
             final int maxOffset = getMaxOffsetForPinChild(
-                    mTopBarDirectChild != null ? mTopBarDirectChild : mTopBar);
+                    mTopBarDirectChild != null ? mTopBarDirectChild : mTopBar, true);
             QMUIViewHelper.getDescendantRect(this, mTopBar, mTmpRect);
 //            mTmpRect.top = mTmpRect.top - topBarInsetAdjustTop;
             Rect rect = mTopBar.getTitleContainerRect();
-            int horStart = mTmpRect.top + maxOffset;
             mCollapsingTextHelper.setCollapsedBounds(
                     mTmpRect.left + rect.left,
-                    horStart + rect.top,
+                    mTmpRect.top + maxOffset + rect.top,
                     mTmpRect.left + rect.right,
-                    horStart + rect.bottom);
+                    mTmpRect.top + maxOffset + rect.bottom);
 
             // Update the expanded bounds
             mCollapsingTextHelper.setExpandedBounds(
@@ -418,6 +411,12 @@ public class QMUICollapsingTopBarLayout extends FrameLayout implements IWindowIn
                     bottom - top - mExpandedMarginBottom);
             // Now recalculate using the new bounds
             mCollapsingTextHelper.recalculate();
+        }
+
+        // Update our child view offset helpers. This needs to be done after the title has been
+        // setup, so that any Toolbars are in their original position
+        for (int i = 0, z = getChildCount(); i < z; i++) {
+            getViewOffsetHelper(getChildAt(i)).onViewLayout();
         }
 
         // Finally, set our minimum height to enable proper AppBarLayout collapsing
@@ -1206,11 +1205,22 @@ public class QMUICollapsingTopBarLayout extends FrameLayout implements IWindowIn
         }
     }
 
-    final int getMaxOffsetForPinChild(View child) {
-        final QMUIViewOffsetHelper offsetHelper = getViewOffsetHelper(child);
+    /**
+     * if in onLayout, the child.getTop is precise， but QMUIViewOffsetHelper.onViewLayout may not called,
+     * so offsetHelper.getLayoutTop() maybe wrong
+     * @param child
+     * @param onLayout
+     * @return
+     */
+    final int getMaxOffsetForPinChild(View child, boolean onLayout) {
+        int layoutTop = child.getTop();
+        if(!onLayout){
+            final QMUIViewOffsetHelper offsetHelper = getViewOffsetHelper(child);
+            layoutTop = offsetHelper.getLayoutTop();
+        }
         final QMUICollapsingTopBarLayout.LayoutParams lp = (QMUICollapsingTopBarLayout.LayoutParams) child.getLayoutParams();
         return getHeight()
-                - offsetHelper.getLayoutTop()
+                - layoutTop
                 - child.getHeight()
                 - lp.bottomMargin;
     }
@@ -1233,7 +1243,7 @@ public class QMUICollapsingTopBarLayout extends FrameLayout implements IWindowIn
                 switch (lp.mCollapseMode) {
                     case QMUICollapsingTopBarLayout.LayoutParams.COLLAPSE_MODE_PIN:
                         offsetHelper.setTopAndBottomOffset(
-                                QMUILangHelper.constrain(-verticalOffset, 0, getMaxOffsetForPinChild(child)));
+                                QMUILangHelper.constrain(-verticalOffset, 0, getMaxOffsetForPinChild(child, false)));
                         break;
                     case QMUICollapsingTopBarLayout.LayoutParams.COLLAPSE_MODE_PARALLAX:
                         offsetHelper.setTopAndBottomOffset(

@@ -25,9 +25,9 @@ import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.support.annotation.ColorInt;
-import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
+import androidx.annotation.ColorInt;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import android.text.TextPaint;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -1406,7 +1406,7 @@ public class QMUIQQFaceView extends View {
                 top = (mStartLine - 1) * (mFontHeight + mLineSpace) + top;
             }
 
-            int bottom = (mEndLine - 1) * (mFontHeight + mLineSpace) + top + mFontHeight;
+            int bottom = (mEndLine - 1) * (mFontHeight + mLineSpace) + getPaddingTop() + mFontHeight;
 
             if (y < top || y > bottom) {
                 return false;

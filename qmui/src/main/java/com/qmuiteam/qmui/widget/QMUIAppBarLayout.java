@@ -16,24 +16,24 @@
 
 package com.qmuiteam.qmui.widget;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Rect;
-import android.support.design.widget.AppBarLayout;
-import android.support.v4.view.ViewCompat;
-import android.support.v4.view.WindowInsetsCompat;
+import com.google.android.material.appbar.AppBarLayout;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.WindowInsets;
 
 import com.qmuiteam.qmui.util.QMUIWindowInsetHelper;
 
 import java.lang.reflect.Field;
 
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+
 /**
- * add support for API 19 when use with {@link android.support.design.widget.CoordinatorLayout}
+ * add support for API 19 when use with {@link CoordinatorLayout}
  * and {@link QMUICollapsingTopBarLayout}
- *
+ * <p>
  * notice: we use reflection to change the field value in AppBarLayout. use it only if you need to
  * set fitSystemWindows for StatusBar
  *
@@ -53,21 +53,32 @@ public class QMUIAppBarLayout extends AppBarLayout implements IWindowInsetLayout
     @Override
     public boolean applySystemWindowInsets19(final Rect insets) {
         if (ViewCompat.getFitsSystemWindows(this)) {
-            //noinspection TryWithIdenticalCatches
+            Field field = null;
             try {
-                Field field = AppBarLayout.class.getDeclaredField("mLastInsets");
-                field.setAccessible(true);
-                field.set(this, new WindowInsetsCompat(null) {
-                    @Override
-                    public int getSystemWindowInsetTop() {
-                        return insets.top;
-                    }
-                });
+                // support 28 change the name
+                field = AppBarLayout.class.getDeclaredField("lastInsets");
             } catch (NoSuchFieldException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
+                try {
+                    field = AppBarLayout.class.getDeclaredField("mLastInsets");
+                } catch (NoSuchFieldException ignored) {
+
+                }
             }
+
+            if (field != null) {
+                field.setAccessible(true);
+                try {
+                    field.set(this, new WindowInsetsCompat(null) {
+                        @Override
+                        public int getSystemWindowInsetTop() {
+                            return insets.top;
+                        }
+                    });
+                } catch (IllegalAccessException ignored) {
+
+                }
+            }
+
             for (int i = 0; i < getChildCount(); i++) {
                 View child = getChildAt(i);
                 if (QMUIWindowInsetHelper.jumpDispatch(child)) {

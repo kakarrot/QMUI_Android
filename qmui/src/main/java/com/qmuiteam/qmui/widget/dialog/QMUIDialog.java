@@ -26,7 +26,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.LayoutRes;
+import androidx.annotation.LayoutRes;
 import android.text.InputType;
 import android.text.method.TransformationMethod;
 import android.view.Gravity;
@@ -483,6 +483,10 @@ public class QMUIDialog extends Dialog {
             }, 300);
         }
 
+        /**
+         * 注意该方法只在调用 {@link #create()} 或 {@link #create(int)} 或 {@link #show()} 生成 Dialog 之后
+         * 才能返回对应的 EditText，在此之前将返回 null
+         */
         @Deprecated
         public EditText getEditText() {
             return mEditText;

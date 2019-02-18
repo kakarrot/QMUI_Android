@@ -17,8 +17,8 @@
 package com.qmuiteam.qmuidemo.fragment.components.viewpager;
 
 import android.annotation.SuppressLint;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,9 +31,7 @@ import com.qmuiteam.qmui.widget.QMUIViewPager;
 import com.qmuiteam.qmuidemo.R;
 import com.qmuiteam.qmuidemo.base.BaseFragment;
 import com.qmuiteam.qmuidemo.fragment.QDAboutFragment;
-import com.qmuiteam.qmuidemo.fragment.components.QDButtonFragment;
 import com.qmuiteam.qmuidemo.fragment.components.QDCollapsingTopBarLayoutFragment;
-import com.qmuiteam.qmuidemo.fragment.components.QDTabSegmentFragment;
 import com.qmuiteam.qmuidemo.fragment.components.QDTabSegmentScrollableModeFragment;
 import com.qmuiteam.qmuidemo.lib.annotation.Widget;
 
@@ -98,8 +96,18 @@ public class QDFitSystemWindowViewPagerFragment extends BaseFragment {
                 }
             }
 
+            @SuppressLint("CommitTransaction")
             @Override
             protected Object hydrate(ViewGroup container, int position) {
+                String name = makeFragmentName(container.getId(), position);
+                if (mCurrentTransaction == null) {
+                    mCurrentTransaction = getChildFragmentManager()
+                            .beginTransaction();
+                }
+                Fragment fragment = getChildFragmentManager().findFragmentByTag(name);
+                if(fragment != null){
+                    return fragment;
+                }
                 switch (position) {
                     case 0:
                         return new QDTabSegmentScrollableModeFragment();
@@ -124,6 +132,9 @@ public class QDFitSystemWindowViewPagerFragment extends BaseFragment {
                 Fragment fragment = getChildFragmentManager().findFragmentByTag(name);
                 if (fragment != null) {
                     mCurrentTransaction.attach(fragment);
+                    if(fragment.getView() != null && fragment.getView().getWidth() == 0){
+                        fragment.getView().requestLayout();
+                    }
                 } else {
                     fragment = (Fragment) item;
                     mCurrentTransaction.add(container.getId(), fragment, name);
