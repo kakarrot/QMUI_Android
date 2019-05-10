@@ -70,7 +70,7 @@ public class QMUIStickySectionItemDecoration<VH extends QMUIStickySectionAdapter
         });
     }
 
-    private void setHeaderVisibility(boolean visibility){
+    private void setHeaderVisibility(boolean visibility) {
         ViewGroup sectionContainer = mWeakSectionContainer.get();
         if (sectionContainer == null) {
             return;
@@ -83,13 +83,14 @@ public class QMUIStickySectionItemDecoration<VH extends QMUIStickySectionAdapter
     public void onDrawOver(@NonNull Canvas c, @NonNull RecyclerView parent,
                            @NonNull RecyclerView.State state) {
 
+
         ViewGroup sectionContainer = mWeakSectionContainer.get();
         if (sectionContainer == null || parent.getChildCount() == 0) {
             return;
         }
 
         RecyclerView.Adapter adapter = parent.getAdapter();
-        if(adapter == null){
+        if (adapter == null) {
             return;
         }
 
@@ -111,8 +112,13 @@ public class QMUIStickySectionItemDecoration<VH extends QMUIStickySectionAdapter
             setHeaderVisibility(false);
             return;
         }
-        if (mStickyHeaderViewHolder == null || mStickyHeaderViewHolder.getItemViewType() != mCallback.getItemViewType(headerPos)) {
-            mStickyHeaderViewHolder = createStickyViewHolder(parent, headerPos);
+        int itemType = mCallback.getItemViewType(headerPos);
+        if (itemType == QMUIStickySectionAdapter.ITEM_TYPE_UNKNOWN) {
+            setHeaderVisibility(false);
+            return;
+        }
+        if (mStickyHeaderViewHolder == null || mStickyHeaderViewHolder.getItemViewType() != itemType) {
+            mStickyHeaderViewHolder = createStickyViewHolder(parent, headerPos, itemType);
         }
 
         if (mStickyHeaderViewPosition != headerPos) {
@@ -122,7 +128,7 @@ public class QMUIStickySectionItemDecoration<VH extends QMUIStickySectionAdapter
 
         setHeaderVisibility(true);
 
-        int contactPoint = sectionContainer.getHeight();
+        int contactPoint = sectionContainer.getHeight() - 1;
         final View childInContact = parent.findChildViewUnder(parent.getWidth() / 2, contactPoint);
         if (childInContact == null) {
             mTargetTop = parent.getTop();
@@ -145,9 +151,8 @@ public class QMUIStickySectionItemDecoration<VH extends QMUIStickySectionAdapter
     }
 
 
-    private VH createStickyViewHolder(RecyclerView recyclerView, int position) {
-        int viewType = mCallback.getItemViewType(position);
-        VH vh = mCallback.createViewHolder(recyclerView, viewType);
+    private VH createStickyViewHolder(RecyclerView recyclerView, int position, int itemType) {
+        VH vh = mCallback.createViewHolder(recyclerView, itemType);
         vh.isForStickyHeader = true;
         return vh;
     }
@@ -157,7 +162,6 @@ public class QMUIStickySectionItemDecoration<VH extends QMUIStickySectionAdapter
         sectionContainer.removeAllViews();
         sectionContainer.addView(viewHolder.itemView);
     }
-
 
 
     public interface Callback<ViewHolder extends QMUIStickySectionAdapter.ViewHolder> {

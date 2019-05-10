@@ -18,16 +18,18 @@ package com.qmuiteam.qmui.arch;
 
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.widget.FrameLayout;
 
 import com.qmuiteam.qmui.util.QMUIStatusBarHelper;
 import com.qmuiteam.qmui.widget.QMUIWindowInsetLayout;
 
 import java.lang.reflect.Field;
+
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 /**
  * the container activity for {@link QMUIFragment}.
@@ -57,8 +59,26 @@ public abstract class QMUIFragmentActivity extends InnerBaseActivity {
     public void onBackPressed() {
         QMUIFragment fragment = getCurrentFragment();
         if (fragment != null && !fragment.isInSwipeBack()) {
-            fragment.popBackStack();
+            fragment.onBackPressed();
         }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        QMUIFragment fragment = getCurrentFragment();
+        if (fragment != null && !fragment.isInSwipeBack() && fragment.onKeyDown(keyCode, event)) {
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        QMUIFragment fragment = getCurrentFragment();
+        if (fragment != null && !fragment.isInSwipeBack() && fragment.onKeyUp(keyCode, event)) {
+            return true;
+        }
+        return super.onKeyUp(keyCode, event);
     }
 
     /**
@@ -126,6 +146,16 @@ public abstract class QMUIFragmentActivity extends InnerBaseActivity {
                 }
                 return false;
             }
+
+            @Override
+            public boolean needReNameTag() {
+                return true;
+            }
+
+            @Override
+            public String newTagName() {
+                return fragment.getClass().getSimpleName();
+            }
         });
         return index;
     }
@@ -161,9 +191,9 @@ public abstract class QMUIFragmentActivity extends InnerBaseActivity {
                     startFragment(mFragment);
                 } else if (toExec instanceof Intent) {
                     Intent intent = (Intent) toExec;
-                    finish();
                     startActivity(intent);
                     overridePendingTransition(transitionConfig.popenter, transitionConfig.popout);
+                    finish();
                 } else {
                     throw new Error("can not handle the result in onLastFragmentFinish");
                 }
